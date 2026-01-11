@@ -12,7 +12,7 @@ open class KPreference<T>(
 ) {
 
     @Suppress("UNCHECKED_CAST")
-    open operator fun getValue(thisRef: PreferenceHolder, property: KProperty<*>): T = with(thisRef.storage) {
+    open operator fun getValue(thisRef: PreferenceHolder, property: KProperty<*>): T = with(thisRef.settings) {
         val key = preferenceName ?: property.name
         when (clazz) {
             Int::class -> getInt (key, defVal as Int) as T
@@ -26,7 +26,7 @@ open class KPreference<T>(
 
     open operator fun setValue(thisRef: PreferenceHolder, property: KProperty<*>, value: T) {
         val key = preferenceName ?: property.name
-        thisRef.storage.run {
+        thisRef.settings.run {
             when (clazz) {
                 Int::class -> putInt(key, value as Int)
                 Long::class -> putLong(key, value as Long)
@@ -41,7 +41,7 @@ open class KPreference<T>(
 }
 
 interface PreferenceHolder {
-    val storage: Settings
+    val settings: Settings
 }
 
 class IntPreference(defVal: Int, preferenceName: String? = null) :

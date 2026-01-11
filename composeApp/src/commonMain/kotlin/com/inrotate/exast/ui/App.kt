@@ -10,27 +10,27 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.LightMode
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.inrotate.exast.getSettings
 import com.inrotate.exast.ui.utils.theme.ExastTheme
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
-
+import com.inrotate.exast.utils.Prefs
 import exast.composeapp.generated.resources.Res
 import exast.composeapp.generated.resources.compose_multiplatform
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.koinInject
+import org.koin.core.annotation.KoinExperimentalAPI
 
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 @Preview
 fun App() {
     var showContent by remember { mutableStateOf(false) }
-    val initTheme = when (getSettings().darkTheme) {
+    val prefs = koinInject<Prefs>()
+    val model = koinInject<Greeting>()
+    val initTheme = when (prefs.darkTheme) {
         1 -> true
         0 -> false
         else -> isSystemInDarkTheme()
@@ -53,7 +53,7 @@ fun App() {
                     }
                     IconButton(onClick = {
                         isDarkTheme = !isDarkTheme
-                        getSettings().darkTheme = if (isDarkTheme) 1 else 0
+                        prefs.darkTheme = if (isDarkTheme) 1 else 0
                     }) {
                         if (isDarkTheme)
                             Icon(Icons.Rounded.DarkMode, contentDescription = "Dark")
@@ -64,7 +64,7 @@ fun App() {
 
 
                 AnimatedVisibility(showContent) {
-                    val greeting = remember { Greeting().greet() }
+                    val greeting = remember { model.greet() }
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,

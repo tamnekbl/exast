@@ -33,7 +33,12 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation("com.russhwolf:multiplatform-settings:1.3.0")
+            implementation(libs.multiplatform.settings)
+            api(libs.koin.core)
+            implementation(libs.koin.compose)
+            //implementation(libs.koin.compose.viewmodel)
+            //implementation(libs.lifecycle.viewmodel)
+            implementation(libs.navigation.compose)
 
         }
 
