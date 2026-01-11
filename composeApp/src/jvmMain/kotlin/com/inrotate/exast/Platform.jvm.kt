@@ -1,8 +1,7 @@
 package com.inrotate.exast
 
-import com.inrotate.exast.utils.SettingsRepository
+import com.inrotate.exast.utils.Prefs
 import com.russhwolf.settings.PreferencesSettings
-import com.russhwolf.settings.Settings
 import java.util.prefs.Preferences
 
 class JVMPlatform : Platform {
@@ -12,9 +11,9 @@ class JVMPlatform : Platform {
 actual fun getPlatform(): Platform = JVMPlatform()
 
 
-val settingsRepository: SettingsRepository by lazy {
+val prefs: Prefs by lazy {
     val preferences = Preferences.userRoot()
     val settings = PreferencesSettings(preferences)
-    SettingsRepository(settings)
+    Prefs(settings)
 }
-actual fun getSettings(): SettingsRepository = settingsRepository
+actual fun getSettings(): Prefs = prefs

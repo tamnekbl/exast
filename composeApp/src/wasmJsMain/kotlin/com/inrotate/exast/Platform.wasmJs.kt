@@ -1,6 +1,6 @@
 package com.inrotate.exast
 
-import com.inrotate.exast.utils.SettingsRepository
+import com.inrotate.exast.utils.Prefs
 import com.russhwolf.settings.StorageSettings
 
 class WasmPlatform : Platform {
@@ -8,6 +8,6 @@ class WasmPlatform : Platform {
 }
 
 
-val  settingsRepository: SettingsRepository by lazy { SettingsRepository(StorageSettings()) }
+val  settingsRepository: Prefs by lazy { Prefs(StorageSettings()) }
 actual fun getPlatform(): Platform = WasmPlatform()
-actual fun getSettings(): SettingsRepository = settingsRepository
+actual fun getSettings(): Prefs = settingsRepository

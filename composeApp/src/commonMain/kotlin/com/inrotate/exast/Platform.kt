@@ -1,7 +1,6 @@
 package com.inrotate.exast
 
-import com.inrotate.exast.utils.SettingsRepository
-import com.russhwolf.settings.Settings
+import com.inrotate.exast.utils.Prefs
 
 interface Platform {
     val name: String
@@ -10,4 +9,4 @@ interface Platform {
 expect fun getPlatform(): Platform
 
 
-expect fun getSettings(): SettingsRepository
+expect fun getSettings(): Prefs
