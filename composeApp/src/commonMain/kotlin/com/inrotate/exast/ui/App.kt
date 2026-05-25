@@ -1,12 +1,10 @@
 package com.inrotate.exast.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.LightMode
@@ -14,22 +12,33 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
+import androidx.savedstate.serialization.SavedStateConfiguration
+import com.inrotate.exast.presentation.navigation.AppRoute
+import com.inrotate.exast.ui.prediction.PredictionTab
 import com.inrotate.exast.ui.utils.theme.ExastTheme
 import com.inrotate.exast.utils.Prefs
-import exast.composeapp.generated.resources.Res
-import exast.composeapp.generated.resources.compose_multiplatform
-import org.jetbrains.compose.resources.painterResource
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.core.annotation.KoinExperimentalAPI
 
-@OptIn(KoinExperimentalAPI::class)
+@OptIn(KoinExperimentalAPI::class, ExperimentalMaterial3Api::class)
 @Composable
 @Preview
 fun App() {
-    var showContent by remember { mutableStateOf(false) }
     val prefs = koinInject<Prefs>()
-    val model = koinInject<Greeting>()
+    val navBackStack = rememberNavBackStack(
+        configuration = appNavSavedStateConfiguration(),
+        AppRoute.Ai,
+    )
+    val selectedRoute = navBackStack.lastOrNull() as? AppRoute ?: AppRoute.Ai
     val initTheme = when (prefs.darkTheme) {
         1 -> true
         0 -> false
@@ -38,42 +47,92 @@ fun App() {
 
     var isDarkTheme by remember { mutableStateOf(initTheme) }
     ExastTheme(darkTheme = isDarkTheme) {
-        Scaffold {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Студенческие мероприятия") },
+                    actions = {
+                        IconButton(
+                            onClick = {
+                                isDarkTheme = !isDarkTheme
+                                prefs.darkTheme = if (isDarkTheme) 1 else 0
+                            },
+                        ) {
+                            if (isDarkTheme) {
+                                Icon(Icons.Rounded.DarkMode, contentDescription = "Темная тема")
+                            } else {
+                                Icon(Icons.Rounded.LightMode, contentDescription = "Светлая тема")
+                            }
+                        }
+                    },
+                )
+            },
+        ) { paddingValues ->
             Column(
                 modifier = Modifier
+                    .padding(paddingValues)
                     .safeContentPadding()
                     .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Button(onClick = { showContent = !showContent }) {
-                        Text("Click me!")
-                    }
-                    IconButton(onClick = {
-                        isDarkTheme = !isDarkTheme
-                        prefs.darkTheme = if (isDarkTheme) 1 else 0
-                    }) {
-                        if (isDarkTheme)
-                            Icon(Icons.Rounded.DarkMode, contentDescription = "Dark")
-                        else
-                            Icon(Icons.Rounded.LightMode, contentDescription = "Light")
+                TabRow(selectedTabIndex = AppRoute.entries.indexOf(selectedRoute)) {
+                    AppRoute.entries.forEach { route ->
+                        Tab(
+                            selected = selectedRoute == route,
+                            onClick = {
+                                if (selectedRoute != route) {
+                                    navBackStack.clear()
+                                    navBackStack.add(route)
+                                }
+                            },
+                            text = { Text(route.title) },
+                        )
                     }
                 }
+                NavDisplay(
+                    backStack = navBackStack,
+                    modifier = Modifier.fillMaxSize(),
+                    transitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
+                    popTransitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
+                    predictivePopTransitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
+                    entryProvider = { route ->
+                        NavEntry(route) {
+                            when (route) {
+                                AppRoute.Home -> PlaceholderTab("Главное")
+                                AppRoute.Feed -> PlaceholderTab("Лента")
+                                AppRoute.Ai -> PredictionTab()
+                                AppRoute.Dashboards -> PlaceholderTab("Дашборды")
+                                else -> PlaceholderTab("Раздел")
+                            }
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
 
-
-                AnimatedVisibility(showContent) {
-                    val greeting = remember { model.greet() }
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Image(painterResource(Res.drawable.compose_multiplatform), null)
-                        Text("Compose: $greeting")
-                    }
+@Composable
+private fun appNavSavedStateConfiguration(): SavedStateConfiguration =
+    remember {
+        SavedStateConfiguration {
+            serializersModule = SerializersModule {
+                polymorphic(NavKey::class) {
+                    subclass(AppRoute.serializer())
                 }
             }
         }
+    }
+
+@Composable
+private fun PlaceholderTab(title: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
     }
 }
