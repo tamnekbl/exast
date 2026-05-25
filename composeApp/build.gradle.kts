@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.composeHotReload)
 }
 
 kotlin {
@@ -38,7 +37,7 @@ kotlin {
             implementation(libs.koin.compose)
             //implementation(libs.koin.compose.viewmodel)
             //implementation(libs.lifecycle.viewmodel)
-            implementation(libs.navigation.compose)
+            implementation(libs.navigation3.ui)
 
         }
 
