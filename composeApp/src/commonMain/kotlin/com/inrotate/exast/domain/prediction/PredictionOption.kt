@@ -8,4 +8,6 @@ data class PredictionOption(
 data class OrganizationOption(
     val id: Int,
     val name: String,
+    val type: String,
+    val isExternal: Boolean,
 )

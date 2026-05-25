@@ -1,9 +1,11 @@
 package com.inrotate.exast.data.prediction
 
+import com.inrotate.exast.data.prediction.dto.OrganizationDto
 import com.inrotate.exast.data.prediction.dto.PredictionRequestDto
 import com.inrotate.exast.data.prediction.dto.PredictionResponseDto
 import com.inrotate.exast.data.prediction.dto.SimilarEventDto
 import com.inrotate.exast.domain.prediction.CreatePredictionRequest
+import com.inrotate.exast.domain.prediction.OrganizationOption
 import com.inrotate.exast.domain.prediction.PredictionResult
 import com.inrotate.exast.domain.prediction.SimilarEvent
 
@@ -16,17 +18,32 @@ fun CreatePredictionRequest.toDto(): PredictionRequestDto =
         timeStart = timeStart,
         timeEnd = timeEnd,
         level = level,
-        location = location,
         format = format,
         organizationRole = organizationRole,
         types = types,
-        organizations = organizations,
+        organizations = organizations.map { it.id },
+    )
+
+fun OrganizationOption.toDto(): OrganizationDto =
+    OrganizationDto(
+        id = id,
+        name = name,
+        type = type,
+        isExternal = isExternal,
+    )
+
+fun OrganizationDto.toDomain(): OrganizationOption =
+    OrganizationOption(
+        id = id,
+        name = name,
+        type = type,
+        isExternal = isExternal,
     )
 
 fun PredictionResponseDto.toDomain(): PredictionResult =
     PredictionResult(
         predictedScale = predictedScale,
-        scaleDescription = scaleDescription,
+        scaleDescription = scaleDescription ?: description ?: "",
         participantsRange = participantsRange,
         probabilities = probabilities,
         confidence = confidence,

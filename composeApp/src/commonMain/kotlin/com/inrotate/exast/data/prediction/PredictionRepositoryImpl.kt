@@ -33,6 +33,9 @@ class PredictionRepositoryImpl(
         } catch (exception: ServerResponseException) {
             logger.warn("PredictionRepository", "Backend server error: ${exception.response.status.value}")
             handleResponseException(exception)
+        } catch (exception: PredictionApiException) {
+            logger.warn("PredictionRepository", "Backend prediction response error: ${exception.message}")
+            handleApiException(exception)
         } catch (exception: UnresolvedAddressException) {
             logger.error("PredictionRepository", "Backend address is unavailable", exception)
             PredictionOutcome.Error(PredictionFailure.Network)
@@ -43,6 +46,24 @@ class PredictionRepositoryImpl(
             logger.error("PredictionRepository", "Unexpected prediction error", exception)
             PredictionOutcome.Error(PredictionFailure.Unknown("Не удалось обработать ответ сервера."))
         }
+
+    private fun handleApiException(exception: PredictionApiException): PredictionOutcome {
+        val message = exception.message
+        val statusCode = exception.statusCode
+        return when {
+            statusCode == HttpStatusCode.Conflict.value || message.contains("MODEL_NOT_FOUND", ignoreCase = true) ->
+                PredictionOutcome.Error(PredictionFailure.ModelNotFound)
+
+            statusCode == HttpStatusCode.BadRequest.value ->
+                PredictionOutcome.Error(PredictionFailure.Backend(statusCode, message))
+
+            statusCode != null ->
+                PredictionOutcome.Error(PredictionFailure.Backend(statusCode, message))
+
+            else ->
+                PredictionOutcome.Error(PredictionFailure.Unknown(message))
+        }
+    }
 
     private suspend fun handleResponseException(exception: ResponseException): PredictionOutcome {
         val status = exception.response.status

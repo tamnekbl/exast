@@ -2,9 +2,10 @@ package com.inrotate.exast.di
 
 import com.inrotate.exast.data.config.ApiConfig
 import com.inrotate.exast.data.network.createHttpClient
+import com.inrotate.exast.data.prediction.OrganizationsApiClient
 import com.inrotate.exast.data.prediction.PredictionApiClient
+import com.inrotate.exast.data.prediction.PredictionOptionsRepositoryImpl
 import com.inrotate.exast.data.prediction.PredictionRepositoryImpl
-import com.inrotate.exast.data.prediction.StaticPredictionOptionsRepository
 import com.inrotate.exast.domain.prediction.PredictEventScaleUseCase
 import com.inrotate.exast.domain.prediction.PredictionOptionsRepository
 import com.inrotate.exast.domain.prediction.PredictionRepository
@@ -29,14 +30,21 @@ expect val platform: Module
 
 val appModule: Module = module {
     includes(platform)
-    single { ApiConfig(baseUrl = "http://localhost:8080") }
+    single {
+        ApiConfig(
+            baseUrl = "http://localhost:8080/api/v1",
+            username = "admin",
+            password = "1",
+        )
+    }
     singleOf(::AppLogger)
-    single { createHttpClient() }
+    single { createHttpClient(get()) }
     single { Prefs(get()) }
     singleOf(::Greeting)
     singleOf(::PredictionApiClient)
+    singleOf(::OrganizationsApiClient)
     single<PredictionRepository> { PredictionRepositoryImpl(get(), get()) }
-    single<PredictionOptionsRepository> { StaticPredictionOptionsRepository() }
+    single<PredictionOptionsRepository> { PredictionOptionsRepositoryImpl(get(), get()) }
     singleOf(::PredictEventScaleUseCase)
     singleOf(::PredictionPresenter)
 }

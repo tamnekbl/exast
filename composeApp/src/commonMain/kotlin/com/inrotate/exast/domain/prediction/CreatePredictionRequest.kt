@@ -8,9 +8,8 @@ data class CreatePredictionRequest(
     val timeStart: String?,
     val timeEnd: String?,
     val level: String,
-    val location: String?,
     val format: String,
     val organizationRole: String,
     val types: List<String>,
-    val organizations: List<Int>,
+    val organizations: List<OrganizationOption>,
 )

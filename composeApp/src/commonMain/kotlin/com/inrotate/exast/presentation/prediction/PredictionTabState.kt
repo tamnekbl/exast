@@ -5,6 +5,33 @@ import com.inrotate.exast.domain.prediction.PredictionOption
 import com.inrotate.exast.domain.prediction.PredictionResult
 
 data class PredictionTabState(
+    val form: PredictionFormState = PredictionFormState(),
+    val levelOptions: List<PredictionOption> = defaultLevelOptions,
+    val formatOptions: List<PredictionOption> = defaultFormatOptions,
+    val organizationRoleOptions: List<PredictionOption> = defaultOrganizationRoleOptions,
+    val typeOptions: List<PredictionOption> = emptyList(),
+    val typeQuery: String = "",
+    val selectedTypes: List<PredictionOption> = emptyList(),
+    val organizationQuery: String = "",
+    val organizationsLoading: Boolean = false,
+    val organizationSuggestions: List<OrganizationOption> = emptyList(),
+    val selectedOrganizations: List<OrganizationOption> = emptyList(),
+    val predictionLoading: Boolean = false,
+    val predictionResult: PredictionResult? = null,
+    val isPredictionStale: Boolean = false,
+    val errorMessage: String? = null,
+) {
+    val canSubmit: Boolean
+        get() = form.title.isNotBlank() &&
+                form.dateStart.isNotBlank() &&
+                form.level.isNotBlank() &&
+                form.format.isNotBlank() &&
+                form.organizationRole.isNotBlank() &&
+                selectedTypes.isNotEmpty() &&
+                !predictionLoading
+}
+
+data class PredictionFormState(
     val title: String = "",
     val description: String = "",
     val dateStart: String = "",
@@ -14,22 +41,7 @@ data class PredictionTabState(
     val level: String = "university",
     val format: String = "offline",
     val organizationRole: String = "organization",
-    val levelOptions: List<PredictionOption> = defaultLevelOptions,
-    val formatOptions: List<PredictionOption> = defaultFormatOptions,
-    val organizationRoleOptions: List<PredictionOption> = defaultOrganizationRoleOptions,
-    val typeOptions: List<PredictionOption> = emptyList(),
-    val organizationOptions: List<OrganizationOption> = emptyList(),
-    val selectedTypes: List<String> = emptyList(),
-    val selectedOrganizations: List<Int> = emptyList(),
-    val typeQuery: String = "",
-    val organizationQuery: String = "",
-    val isLoading: Boolean = false,
-    val result: PredictionResult? = null,
-    val errorMessage: String? = null,
-) {
-    val canSubmit: Boolean
-        get() = title.isNotBlank() && dateStart.isNotBlank() && !isLoading
-}
+)
 
 val defaultLevelOptions = listOf(
     PredictionOption("structural", "Структурный"),
