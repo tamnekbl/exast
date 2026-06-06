@@ -22,8 +22,8 @@ fun createHttpClient(apiConfig: ApiConfig): HttpClient = HttpClient {
             basic {
                 credentials {
                     BasicAuthCredentials(
-                        username = apiConfig.username,
-                        password = apiConfig.password,
+                        username = apiConfig.username.orEmpty(),
+                        password = apiConfig.password.orEmpty(),
                     )
                 }
                 sendWithoutRequest { true }

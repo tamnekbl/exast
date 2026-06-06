@@ -13,11 +13,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.inrotate.exast.data.config.ApiConfig
 import com.inrotate.exast.presentation.navigation.AppRoute
 import com.inrotate.exast.ui.prediction.PredictionTab
 import com.inrotate.exast.ui.utils.theme.ExastTheme
@@ -34,6 +37,7 @@ import org.koin.core.annotation.KoinExperimentalAPI
 @Preview
 fun App() {
     val prefs = koinInject<Prefs>()
+    val apiConfig = koinInject<ApiConfig>()
     val navBackStack = rememberNavBackStack(
         configuration = appNavSavedStateConfiguration(),
         AppRoute.Ai,
@@ -96,18 +100,73 @@ fun App() {
                     predictivePopTransitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
                     entryProvider = { route ->
                         NavEntry(route) {
-                            when (route) {
-                                AppRoute.Home -> PlaceholderTab("Главное")
-                                AppRoute.Feed -> PlaceholderTab("Лента")
-                                AppRoute.Ai -> PredictionTab()
-                                AppRoute.Dashboards -> PlaceholderTab("Дашборды")
-                                else -> PlaceholderTab("Раздел")
+                            if (route == AppRoute.Home) {
+                                HomeTab(apiConfig)
+                            } else {
+                                when (route) {
+                                    AppRoute.Home -> PlaceholderTab("Главное")
+                                    AppRoute.Feed -> PlaceholderTab("Лента")
+                                    AppRoute.Ai -> PredictionTab()
+                                    AppRoute.Dashboards -> PlaceholderTab("Дашборды")
+                                    else -> PlaceholderTab("Раздел")
+                                }
                             }
                         }
                     },
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun HomeTab(apiConfig: ApiConfig) {
+    var baseUrl by remember { mutableStateOf(apiConfig.baseUrl) }
+    var username by remember { mutableStateOf(apiConfig.username.orEmpty()) }
+    var password by remember { mutableStateOf(apiConfig.password.orEmpty()) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = "Настройки API",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+        OutlinedTextField(
+            value = baseUrl,
+            onValueChange = { value ->
+                baseUrl = value
+                apiConfig.baseUrl = value.trimEnd('/')
+            },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            label = { Text("Базовый URL") },
+        )
+        OutlinedTextField(
+            value = username,
+            onValueChange = { value ->
+                username = value
+                apiConfig.username = value.takeIf(String::isNotBlank)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            label = { Text("Логин") },
+        )
+        OutlinedTextField(
+            value = password,
+            onValueChange = { value ->
+                password = value
+                apiConfig.password = value.takeIf(String::isNotBlank)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            label = { Text("Пароль") },
+            visualTransformation = PasswordVisualTransformation(),
+        )
     }
 }
 
